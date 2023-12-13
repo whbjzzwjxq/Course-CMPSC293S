@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+__env/
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Visual Studio Code directories
+.vscode/
+
+# Visual Studio Code workspace file
+*.code-workspace
