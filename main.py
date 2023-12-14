@@ -102,22 +102,36 @@ def main():
         else:
             print(f"{k}: {v:.2}")
 
-    print("---- BM25 + API ----")
-    result_api = eval_ast_bm25(args, query_file_name, candidate_file_name, cut)
+    print("---- BM25 + Tokenization ----")
+    result_token = eval_ast_bm25(args, query_file_name, candidate_file_name, cut, gen_api=False)
+    for k, v in result_token.items():
+        if k != "timecost":
+            print(f"{k}: {v:.2%}")
+        else:
+            print(f"{k}: {v:.2}")
+
+    print("---- BM25 + Tokenization + API ----")
+    result_api = eval_ast_bm25(args, query_file_name, candidate_file_name, cut, gen_api=True)
     for k, v in result_api.items():
         if k != "timecost":
             print(f"{k}: {v:.2%}")
         else:
             print(f"{k}: {v:.2}")
 
+    result_dr = {}
+    result_bm25 = {}
+
     result = {
         "dr": result_dr,
         "bm25": result_bm25,
+        "bm25_token": result_token,
         "bm25_api": result_api,
     }
 
-    with open("result.json", "w") as f:
-        json.dump(result, f)
+    print(result)
+
+    # with open("result.json", "w") as f:
+    #     json.dump(result, f)
 
 
 if __name__ == "__main__":

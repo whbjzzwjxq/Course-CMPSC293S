@@ -86,7 +86,7 @@ def get_api_seq(node, api_seq, code_bytes, tmp=None):
         for child in node.children:
             get_api_seq(child, api_seq, code_bytes, tmp)
 
-def tokenize_code_ast(parser: Parser, code: str):
+def tokenize_code_ast(parser: Parser, code: str, gen_api: bool):
     code_bytes = code.encode("utf-8")
     tree = parser.parse(code_bytes)
     root_node = tree.root_node
@@ -94,7 +94,8 @@ def tokenize_code_ast(parser: Parser, code: str):
     code_lines = code.split("\n")
     code_tokens = [index_to_code_token(x, code_lines) for x in tokens_index]
     api_seqs = []
-    get_api_seq(root_node, api_seqs, code_bytes)
+    if gen_api:
+        get_api_seq(root_node, api_seqs, code_bytes)
     # original_tokens = [t.string for t in tokenize_code(code) if t.type != tokenize.COMMENT]
     return code_tokens, api_seqs
 
