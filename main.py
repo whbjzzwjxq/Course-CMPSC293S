@@ -76,11 +76,15 @@ def main():
     tokenizer = RobertaTokenizer.from_pretrained(args.pretrained_dir)
     model = RobertaModel.from_pretrained(args.pretrained_dir, add_pooling_layer=False)
 
-    query_file_name = "./data/codenet.jsonl"
-    candidate_file_name = "./data/codenet.jsonl"
+    query_file_name = "./data/query.jsonl"
+    candidate_file_name = "./data/corpus.jsonl"
     cut = True
-    # eval_dense(args, model, tokenizer, query_file_name, candidate_file_name, cut)
-    eval_bm25(args, query_file_name, candidate_file_name, cut)
+    # Dense handles the cutting of input in its own logic.
+    # eval_dense(args, model, tokenizer, candidate_file_name, candidate_file_name, cut)
+
+    # BM25 handles the cutting of input in its own logic.
+    # Because the original query will be failed.
+    eval_bm25(args, candidate_file_name, candidate_file_name, cut)
 
 
 if __name__ == "__main__":

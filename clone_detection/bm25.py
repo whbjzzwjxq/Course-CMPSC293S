@@ -1,16 +1,13 @@
 import json
-import os
+import tokenize
 from collections import Counter
 
-import numpy as np
 from gensim.corpora import Dictionary
-from gensim.models import TfidfModel, LuceneBM25Model
+from gensim.models import LuceneBM25Model, TfidfModel
 from gensim.similarities import SparseMatrixSimilarity
 from tqdm import tqdm
 
-import tokenize
-
-from .utils import compute, logger, K, tokenize_code
+from .utils import compute, logger, tokenize_code
 
 
 def eval_bm25(args, file_name: str, candidate_file_name: str, cut: bool):

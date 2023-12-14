@@ -1,4 +1,9 @@
-12/12/2023 12:43:11 - INFO - __main__ -     Data size = 15594
-12/12/2023 12:43:11 - INFO - __main__ -     eval_map = 0.1337
-12/12/2023 12:43:11 - INFO - __main__ -     eval_map_at_100 = 0.1144
-12/12/2023 12:43:11 - INFO - __main__ -     eval_prec = 0.3288
+12/13/2023 11:45:43 - INFO - ReACC -     Data size = 15594
+12/13/2023 11:45:43 - INFO - ReACC -     eval_map = 0.1504
+12/13/2023 11:45:43 - INFO - ReACC -     eval_map_at_100 = 0.1277
+12/13/2023 11:45:43 - INFO - ReACC -     eval_prec = 0.3312
+
+12/13/2023 11:57:04 - INFO - ReACC -     Data size = 15594
+12/13/2023 11:57:04 - INFO - ReACC -     eval_map = 0.1129
+12/13/2023 11:57:04 - INFO - ReACC -     eval_map_at_100 = 0.0959
+12/13/2023 11:57:04 - INFO - ReACC -     eval_prec = 0.2699

@@ -1,5 +1,4 @@
 import json
-import os
 from collections import Counter
 from functools import partial
 
@@ -10,8 +9,8 @@ from torch.utils.data import DataLoader, Dataset, SequentialSampler
 from tqdm import tqdm
 from transformers import RobertaModel, RobertaTokenizer
 
-from processor import Processor
-from .utils import InputFeatures, K, compute, logger
+from .processor import Processor
+from .utils import InputFeatures, compute, logger
 
 
 class CodeWithDocNoRepDataset(Dataset):
