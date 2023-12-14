@@ -1,16 +1,18 @@
 import logging
-
-from dataclasses import dataclass
-
-from typing import List
-
 import tokenize
-
+from dataclasses import dataclass
 from io import BytesIO
+from typing import List, Tuple
 
 import numpy as np
 
-logger = logging.getLogger("ReACC")
+from tree_sitter import Language, Parser
+
+from tree_parser import (
+    index_to_code_token,
+    remove_comments_and_docstrings,
+    tree_to_token_index,
+)
 
 K = 100
 
@@ -25,7 +27,7 @@ class InputFeatures:
 
 
 def tokenize_code(code: str):
-    tokens = tokenize.tokenize(BytesIO(code.encode('utf-8')).readline)
+    tokens = tokenize.tokenize(BytesIO(code.encode("utf-8")).readline)
     return tokens
 
 
@@ -47,18 +49,59 @@ def remove_second_half_of_tokens(code: str):
         start_line, start_col = tok.start
         end_line, end_col = last_end
         if start_line > end_line:
-            reconstructed_code += '\n' * (start_line - end_line)
-            reconstructed_code += ' ' * start_col
+            reconstructed_code += "\n" * (start_line - end_line)
+            reconstructed_code += " " * start_col
         else:
-            reconstructed_code += ' ' * (start_col - end_col)
+            reconstructed_code += " " * (start_col - end_col)
 
         reconstructed_code += tok.string
         last_end = tok.end
 
     return reconstructed_code
 
+def span_select(code_bytes, *nodes, indent=False):
+    if not nodes:
+        return ""
+    start, end = nodes[0].start_byte, nodes[-1].end_byte
+    select = code_bytes[start:end].decode("utf-8")
+    if indent:
+        return " " * nodes[0].start_point[1] + select
+    return select
 
-def compute(scores, query_labels, label2num, query_indexs, candidate_indexs, candidate_labels):
+def get_api_seq(node, api_seq, code_bytes, tmp=None):
+    if node.type == "call":
+        api = node.child_by_field_name("function")
+        if tmp:
+            tmp.append(span_select(code_bytes, api))
+            ant = False
+        else:
+            tmp = [span_select(code_bytes, api)]
+            ant = True
+        for child in node.children:
+            get_api_seq(child, api_seq, code_bytes, tmp)
+        if ant:
+            api_seq += tmp[::-1]
+            tmp = None
+    else:
+        for child in node.children:
+            get_api_seq(child, api_seq, code_bytes, tmp)
+
+def tokenize_code_ast(parser: Parser, code: str):
+    code_bytes = code.encode("utf-8")
+    tree = parser.parse(code_bytes)
+    root_node = tree.root_node
+    tokens_index = tree_to_token_index(root_node)
+    code_lines = code.split("\n")
+    code_tokens = [index_to_code_token(x, code_lines) for x in tokens_index]
+    api_seqs = []
+    get_api_seq(root_node, api_seqs, code_bytes)
+    # original_tokens = [t.string for t in tokenize_code(code) if t.type != tokenize.COMMENT]
+    return code_tokens, api_seqs
+
+
+def compute(
+    scores, query_labels, label2num, query_indexs, candidate_indexs, candidate_labels
+):
     sort_ids = np.argsort(scores, axis=-1, kind="quicksort", order=None)[:, ::-1]
     MAP = []
     MAP_K = []
@@ -84,7 +127,7 @@ def compute(scores, query_labels, label2num, query_indexs, candidate_indexs, can
         else:
             MAP.append(0.0)
     result = {
-        "Data size": len(MAP),
+        # "Data size": len(MAP),
         "eval_map": float(np.mean(MAP)),
         f"eval_map_at_{K}": float(np.mean(MAP_K)),
         "eval_prec": float(PREC / len(MAP)),

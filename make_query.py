@@ -11,7 +11,7 @@ def _main():
         content = json.loads(line)
         code = remove_second_half_of_tokens(content["func"])
         all += len(content["func"]) / len(code)
-        content["func"] = code
+        content["func"] = code.removeprefix("utf-8\n")
         new_lines.append(json.dumps(content) + "\n")
 
     print(all / i)

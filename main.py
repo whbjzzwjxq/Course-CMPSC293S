@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import random
 
@@ -6,6 +7,7 @@ import numpy as np
 import torch
 from transformers import RobertaModel, RobertaTokenizer
 
+from clone_detection.ast_bm25 import eval_ast_bm25
 from clone_detection.bm25 import eval_bm25
 from clone_detection.dense import eval_dense
 
@@ -80,11 +82,42 @@ def main():
     candidate_file_name = "./data/corpus.jsonl"
     cut = True
     # Dense handles the cutting of input in its own logic.
-    # eval_dense(args, model, tokenizer, candidate_file_name, candidate_file_name, cut)
+    print("---- Dense Retrieval ----")
+    result_dr = eval_dense(
+        args, model, tokenizer, candidate_file_name, candidate_file_name, cut
+    )
+    for k, v in result_dr.items():
+        if k != "timecost":
+            print(f"{k}: {v:.2%}")
+        else:
+            print(f"{k}: {v:.2}")
 
     # BM25 handles the cutting of input in its own logic.
     # Because the original query will be failed.
-    eval_bm25(args, candidate_file_name, candidate_file_name, cut)
+    print("---- BM25 ----")
+    result_bm25 = eval_bm25(args, candidate_file_name, candidate_file_name, cut)
+    for k, v in result_bm25.items():
+        if k != "timecost":
+            print(f"{k}: {v:.2%}")
+        else:
+            print(f"{k}: {v:.2}")
+
+    print("---- BM25 + API ----")
+    result_api = eval_ast_bm25(args, query_file_name, candidate_file_name, cut)
+    for k, v in result_api.items():
+        if k != "timecost":
+            print(f"{k}: {v:.2%}")
+        else:
+            print(f"{k}: {v:.2}")
+
+    result = {
+        "dr": result_dr,
+        "bm25": result_bm25,
+        "bm25_api": result_api,
+    }
+
+    with open("result.json", "w") as f:
+        json.dump(result, f)
 
 
 if __name__ == "__main__":

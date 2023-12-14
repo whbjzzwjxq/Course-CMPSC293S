@@ -1,4 +1,5 @@
 import json
+import time
 from collections import Counter
 from functools import partial
 
@@ -10,7 +11,7 @@ from tqdm import tqdm
 from transformers import RobertaModel, RobertaTokenizer
 
 from .processor import Processor
-from .utils import InputFeatures, compute, logger
+from .utils import InputFeatures, compute
 
 
 class CodeWithDocNoRepDataset(Dataset):
@@ -21,7 +22,7 @@ class CodeWithDocNoRepDataset(Dataset):
         self.proc = Processor(args.lang, remove_comments=False)
 
         # load index
-        logger.info(f"Creating features from {data_file}")
+        # logger.info(f"Creating features from {data_file}")
 
         self.examples = []
         lines = open(data_file).readlines()
@@ -36,7 +37,7 @@ class CodeWithDocNoRepDataset(Dataset):
             self.examples.append(
                 InputFeatures(token_id, content["index"], int(content["label"]))
             )
-        logger.info(f"loaded {len(self.examples)} data")
+        # logger.info(f"loaded {len(self.examples)} data")
 
         self.label_examples = {}
         for e in self.examples:
@@ -80,6 +81,7 @@ def eval_dense(
     candidate_file_name: str,
     cut: bool,
 ):
+    timer = time.perf_counter()
     args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
 
     query_dataset = CodeWithDocNoRepDataset(
@@ -96,7 +98,9 @@ def eval_dense(
         num_workers=4,
     )
 
-    candidate_dataset = CodeWithDocNoRepDataset(tokenizer, args, candidate_file_name, cut_ratio=0.0)
+    candidate_dataset = CodeWithDocNoRepDataset(
+        tokenizer, args, candidate_file_name, cut_ratio=0.0
+    )
     candidate_sampler = SequentialSampler(candidate_dataset)
     candidate_dataloader = DataLoader(
         candidate_dataset,
@@ -122,10 +126,10 @@ def eval_dense(
         model = torch.nn.DataParallel(model)
 
     # Eval!
-    logger.info("***** Running evaluation *****")
-    logger.info("  Num Query = %d", len(query_dataset))
-    logger.info("  Num Candidate = %d", len(candidate_dataset))
-    logger.info("  Batch size = %d", args.eval_batch_size)
+    # logger.info("***** Running evaluation *****")
+    # logger.info("  Num Query = %d", len(query_dataset))
+    # logger.info("  Num Candidate = %d", len(candidate_dataset))
+    # logger.info("  Batch size = %d", args.eval_batch_size)
     model.to(args.device)
 
     model.eval()
@@ -138,7 +142,9 @@ def eval_dense(
         code_inputs = batch[0].to(args.device)
         index = batch[1]
         with torch.no_grad():
-            attn_mask = (code_inputs != tokenizer.pad_token_id).clone().detach().to(torch.uint8)
+            attn_mask = (
+                (code_inputs != tokenizer.pad_token_id).clone().detach().to(torch.uint8)
+            )
             code_vec = model(code_inputs, attention_mask=attn_mask)[0]
             code_vec = torch.nn.functional.normalize(code_vec[:, 0, :], dim=1)
             query_vecs.append(code_vec.cpu().numpy())
@@ -148,7 +154,9 @@ def eval_dense(
         code_inputs = batch[0].to(args.device)
         index = batch[1]
         with torch.no_grad():
-            attn_mask = (code_inputs != tokenizer.pad_token_id).clone().detach().to(torch.uint8)
+            attn_mask = (
+                (code_inputs != tokenizer.pad_token_id).clone().detach().to(torch.uint8)
+            )
             code_vec = model(code_inputs, attention_mask=attn_mask)[0]
             if args.num_vec > 0:
                 code_vec = torch.nn.functional.normalize(
@@ -170,7 +178,15 @@ def eval_dense(
         scores = np.einsum("nd,mvd->nmv", query_vecs, candidate_vecs).max(-1)
     else:
         scores = np.matmul(query_vecs, candidate_vecs.T)
-    
-    result = compute(scores, query_labels, label2num, query_indexs, candidate_indexs, candidate_labels)
-    for key in sorted(result.keys()):
-        logger.info("  %s = %s", key, str(round(result[key], 4)))
+
+    result = compute(
+        scores,
+        query_labels,
+        label2num,
+        query_indexs,
+        candidate_indexs,
+        candidate_labels,
+    )
+    timecost = time.perf_counter() - timer
+    result["timecost"] = timecost
+    return result

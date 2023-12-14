@@ -1,9 +1,0 @@
-12/13/2023 11:45:43 - INFO - ReACC -     Data size = 15594
-12/13/2023 11:45:43 - INFO - ReACC -     eval_map = 0.1504
-12/13/2023 11:45:43 - INFO - ReACC -     eval_map_at_100 = 0.1277
-12/13/2023 11:45:43 - INFO - ReACC -     eval_prec = 0.3312
-
-12/13/2023 11:57:04 - INFO - ReACC -     Data size = 15594
-12/13/2023 11:57:04 - INFO - ReACC -     eval_map = 0.1129
-12/13/2023 11:57:04 - INFO - ReACC -     eval_map_at_100 = 0.0959
-12/13/2023 11:57:04 - INFO - ReACC -     eval_prec = 0.2699
