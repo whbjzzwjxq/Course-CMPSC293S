@@ -29,6 +29,35 @@ def tokenize_code(code: str):
     return tokens
 
 
+def remove_second_half_of_tokens(code: str):
+    # Tokenize the source code
+    tokens = list(tokenize_code(code))
+
+    # Calculate the halfway point
+    halfway_point = len(tokens) // 2
+
+    # Keep only the first half of the tokens
+    first_half_tokens = tokens[:halfway_point]
+
+    # Reconstruct the code from the remaining tokens
+    reconstructed_code = ""
+    last_end = (1, 0)  # Starting with the beginning of the file
+    for tok in first_half_tokens:
+        # Add whitespace for proper token separation
+        start_line, start_col = tok.start
+        end_line, end_col = last_end
+        if start_line > end_line:
+            reconstructed_code += '\n' * (start_line - end_line)
+            reconstructed_code += ' ' * start_col
+        else:
+            reconstructed_code += ' ' * (start_col - end_col)
+
+        reconstructed_code += tok.string
+        last_end = tok.end
+
+    return reconstructed_code
+
+
 def compute(scores, query_labels, label2num, query_indexs, candidate_indexs, candidate_labels):
     sort_ids = np.argsort(scores, axis=-1, kind="quicksort", order=None)[:, ::-1]
     MAP = []
