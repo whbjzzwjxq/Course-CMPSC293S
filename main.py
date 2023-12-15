@@ -118,9 +118,6 @@ def main():
         else:
             print(f"{k}: {v:.2}")
 
-    result_dr = {}
-    result_bm25 = {}
-
     result = {
         "dr": result_dr,
         "bm25": result_bm25,
@@ -130,8 +127,8 @@ def main():
 
     print(result)
 
-    # with open("result.json", "w") as f:
-    #     json.dump(result, f)
+    with open("result.json", "w") as f:
+        json.dump(result, f)
 
 
 if __name__ == "__main__":
