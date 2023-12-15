@@ -1,0 +1,21 @@
+Install required packages
+```
+pip install -r requirements.txt
+```
+
+Run this to produce the result:
+
+```cmd
+python3 ./main.py
+```
+
+clone_detection: Implementation of the algorithms.
+data: Query data and corpus, from PY150 dataset.
+reacc-py-retriever: The pre-trained model from the original paper.
+tree_parser: Implementation of mature partial parser tree_sitter, do a wrap-up to be used.
+result.json: Result executed on our local laptop.
+
+
+Authors:
+Hongbo Wen (hongbowen@ucsb.edu)
+Hanzhi Liu (hanzhi@ucsb.edu)
