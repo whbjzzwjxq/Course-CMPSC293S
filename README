@@ -1,6 +1,8 @@
 Install required packages
 ```
 pip install -r requirements.txt
+cd tree_parser
+python build.py
 ```
 
 Run this to produce the result:
